@@ -89,10 +89,7 @@ model.compile(loss='categorical_crossentropy', optimizer=SGD(learning_rate=0.001
 
 
 def lr_scheduler(epoch, learning_rate):
-    if epoch < 5:
-        return learning_rate
-    else:
-        return 0.001 * (0.5 ** (epoch // 20))
+    return 0.001 * (0.5 ** (epoch // 20))
 
 
 # construct the training image generator for data augmentation
