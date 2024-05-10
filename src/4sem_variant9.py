@@ -10,7 +10,6 @@ from tensorflow.keras.datasets import cifar10  # библиотека базы �
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-# os.environ["TF_GPU_VISIBLE_DEVICES"] = "1"
 
 weights = 'weights.h5'
 num_class = 10
@@ -35,7 +34,7 @@ def create_model(with_dropout: bool):
     vgg_model = VGG16(
         include_top=False,
         classes=num_class,
-        input_shape=x_train[0].shape  # input: 32x32 images with 3 channels -> (32, 32, 3) tensors.
+        input_shape=x_train[0].shape  # вход: 32x32 изображения с 3 каналлами -> (32, 32, 3) тензоры.
     )
     for layer in vgg_model.layers:
         model.add(layer)
@@ -51,7 +50,6 @@ def create_model(with_dropout: bool):
 
     model.summary()
 
-    # For a multi-class classification problem
     model.compile(loss='categorical_crossentropy', optimizer=SGD(learning_rate=0.001, momentum=0.9),
                   metrics=['accuracy'])
 
@@ -65,7 +63,7 @@ def lr_scheduler(epoch, learning_rate):
 logs = []
 for with_dropuot in (True, False):
     model = create_model(with_dropuot)
-    # train the model
+    # тренируем модель
     log = model.fit(
         x_train,
         y_train_cat,
@@ -75,12 +73,12 @@ for with_dropuot in (True, False):
         callbacks=[
             LearningRateScheduler(schedule=lr_scheduler, verbose=True),
             ModelCheckpoint(filepath=weights, monitor='val_accuracy', save_best_only=True, mode='max'),
-            # EarlyStopping(monitor='loss', min_delta=0.0001, patience=3, restore_best_weights=True)
+            EarlyStopping(monitor='loss', min_delta=0.0001, patience=3, restore_best_weights=True)
         ]
     )
     logs.append(log)
 
-    # We load the best weights saved by the ModelCheckpoint
+    # Загружаем лучшие веса, сохраненные в ModelCheckpoint
     model.load_weights(weights)
 
     train_loss, train_accuracy = model.evaluate(x_train, y_train_cat, batch_size=batch_size, steps=156)
@@ -89,6 +87,7 @@ for with_dropuot in (True, False):
     test_loss, test_accuracy = model.evaluate(x_test, y_test_cat)
     print('Testing loss: {}\nTesting accuracy: {}'.format(test_loss, test_accuracy))
 
+# графическое представление процесса обучения
 plt.plot(logs[0].history['loss'], label='with dropout loss')
 plt.plot(logs[0].history['accuracy'], label='with dropout accuracy')
 plt.plot(logs[1].history['loss'], label='without dropout loss')
