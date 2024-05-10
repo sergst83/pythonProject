@@ -70,7 +70,7 @@ for with_dropuot in (True, False):
         x_train,
         y_train_cat,
         batch_size=batch_size,
-        validation_data=(x_test, y_test_cat),
+        validation_split=0.2,
         epochs=epochs,
         callbacks=[
             LearningRateScheduler(schedule=lr_scheduler, verbose=True),
