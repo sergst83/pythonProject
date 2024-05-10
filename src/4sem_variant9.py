@@ -1,16 +1,18 @@
 import os
 
-from keras import Sequential
+from tensorflow.keras import Sequential
 import matplotlib.pyplot as plt
-from keras.src.callbacks import LearningRateScheduler, ModelCheckpoint, EarlyStopping
-from keras.src.optimizers import SGD
-from keras.utils import to_categorical
+from tensorflow.keras.callbacks import LearningRateScheduler, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.datasets import cifar10  # библиотека базы выборок cifar10
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# os.environ["TF_GPU_VISIBLE_DEVICES"] = "1"
 
+weights = 'weights.h5'
 num_class = 10
 epochs = 50
 batch_size = 128
@@ -57,8 +59,6 @@ def create_model(with_dropout: bool):
 
 
 def lr_scheduler(epoch, learning_rate):
-    if epoch < 5:
-        return learning_rate
     return 0.001 * (0.5 ** (epoch // 20))
 
 
@@ -74,14 +74,14 @@ for with_dropuot in (True, False):
         epochs=epochs,
         callbacks=[
             LearningRateScheduler(schedule=lr_scheduler, verbose=True),
-            ModelCheckpoint(filepath='./weights.keras', monitor='val_accuracy', save_best_only=True, mode='max'),
+            ModelCheckpoint(filepath=weights, monitor='val_accuracy', save_best_only=True, mode='max'),
             # EarlyStopping(monitor='loss', min_delta=0.0001, patience=3, restore_best_weights=True)
         ]
     )
     logs.append(log)
 
     # We load the best weights saved by the ModelCheckpoint
-    model.load_weights('./weights.keras')
+    model.load_weights(weights)
 
     train_loss, train_accuracy = model.evaluate(x_train, y_train_cat, batch_size=batch_size, steps=156)
     print('Training loss: {}\nTraining accuracy: {}'.format(train_loss, train_accuracy))
@@ -93,5 +93,6 @@ plt.plot(logs[0].history['loss'], label='with dropout loss')
 plt.plot(logs[0].history['accuracy'], label='with dropout accuracy')
 plt.plot(logs[1].history['loss'], label='without dropout loss')
 plt.plot(logs[1].history['accuracy'], label='without dropout accuracy')
+plt.legend()
 plt.grid(True)
 plt.show()
